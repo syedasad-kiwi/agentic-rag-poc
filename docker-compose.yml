@@ -1,0 +1,37 @@
+# Use a recent version of the Docker Compose file format.
+version: '3.8'
+
+# Define the services (containers) that make up your application.
+services:
+  # This service is for our PostgreSQL database with pgvector.
+  db:
+    # Using the official postgres image
+    image: postgres:16
+    
+    # A friendly name for our container.
+    container_name: agentic_rag_db
+
+    # Environment variables to configure the PostgreSQL instance.
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password
+
+    # Map the container's port 5432 to the host machine's port.
+    ports:
+      - "${DB_PORT}:5432"
+
+    # Define volumes for data persistence and initialization script
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql
+
+    # Install pgvector extension
+    command: >
+      bash -c "
+        apt-get update && 
+        apt-get install -y postgresql-16-pgvector && 
+        docker-entrypoint.sh postgres
+      "# Define the named volume used by the 'db' service for data persistence.
+volumes:
+  pg_data:
