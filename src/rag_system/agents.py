@@ -1,12 +1,13 @@
+import os
 from crewai import Agent, LLM
 from .tools import document_retrieval_tool
-from .hybrid_tools import hybrid_search_tool 
 
-# Initialize the Ollama LLM for the agents - using gemma3:1b for reliability
-# Change to gpt-oss:latest if you want to use the larger model
+# Initialize the Ollama LLM for the agents - using gemma3:4b for reliability
+# Use environment variable for base URL to support Docker deployment
+ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 ollama_llm = LLM(
     model="ollama/gemma3:4b",  # Using a larger model for better context understanding
-    base_url="http://localhost:11434",
+    base_url=ollama_base_url,
     temperature=1,
     timeout=300,
     verbose=True,  # Enable verbose logging for debugging

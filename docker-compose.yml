@@ -1,37 +1,26 @@
-# Use a recent version of the Docker Compose file format.
 version: '3.8'
 
-# Define the services (containers) that make up your application.
 services:
-  # This service is for our PostgreSQL database with pgvector.
-  db:
-    # Using the official postgres image
-    image: postgres:16
-    
-    # A friendly name for our container.
-    container_name: agentic_rag_db
-
-    # Environment variables to configure the PostgreSQL instance.
+  # Your CrewAI RAG API service
+  rag-api:
+    build: . # Build the image from the Dockerfile in the current directory
+    container_name: crewai_rag_api
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres_password
-
-    # Map the container's port 5432 to the host machine's port.
+      # Pass the DATABASE_URL to the API container.
+      # 'host.docker.internal' is a special DNS name that points to the host machine.
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@host.docker.internal:${DB_PORT}/${DB_NAME}
     ports:
-      - "${DB_PORT}:5432"
+      - "8000:8000"
+    # This allows the container to resolve 'host.docker.internal'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
 
-    # Define volumes for data persistence and initialization script
+  # The OpenWebUI frontend service
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    ports:
+      - "3000:8080"
     volumes:
-      - pg_data:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql
-
-    # Install pgvector extension
-    command: >
-      bash -c "
-        apt-get update && 
-        apt-get install -y postgresql-16-pgvector && 
-        docker-entrypoint.sh postgres
-      "# Define the named volume used by the 'db' service for data persistence.
-volumes:
-  pg_data:
+      - o

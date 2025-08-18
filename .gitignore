@@ -2,6 +2,8 @@
 .env
 .env.local
 .env.*.local
+.env.docker
+.env.docker.host
 
 # Python
 __pycache__/
@@ -46,10 +48,18 @@ ENV/
 # Data files (keep structure but ignore large files)
 data/processed/*
 !data/processed/.gitkeep
+data/raw/*
+!data/raw/.gitkeep
 *.csv
 *.json
 *.pkl
 *.parquet
+
+# Test files
+test_*
+*_test.py
+tests/
+experiments/
 
 # Logs
 *.log
@@ -70,7 +80,18 @@ Thumbs.db
 
 # Docker
 .docker/
+docker-compose.override.yml
 
 # Temporary files
 *.tmp
 *.temp
+
+# Model files
+*.bin
+*.onnx
+*.safetensors
+
+# API keys and secrets
+*.key
+*.pem
+secrets/
