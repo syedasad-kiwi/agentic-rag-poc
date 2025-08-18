@@ -2,21 +2,34 @@ from crewai import Crew, Process, Task
 from .agents import document_researcher, insight_synthesizer
 
 def create_rag_crew(query: str):
-    """Creates and configures the RAG crew to process a query."""
+    """
+    Creates and configures a two-agent RAG crew to process a query.
+    - The Document Researcher finds relevant information.
+    - The Insight Synthesizer formulates the final answer based on the retrieved context.
+    """
 
-    # Define a single comprehensive task that does both retrieval and analysis
-    comprehensive_task = Task(
-        description=f"Answer the question: '{query}' by following these steps: 1) Use the document retrieval tool to search for relevant information in the policy and standards documents. 2) Based on the retrieved content, provide a comprehensive answer to the question. 3) IMPORTANT: Include source file names from the retrieved documents in your final answer. Add a 'Sources:' section at the end listing all source files used. 4) If no relevant information is found, clearly state this. Use ONLY information from the retrieved documents - do not use general knowledge.",
-        expected_output="A comprehensive answer to the user's question based solely on the retrieved document content, with a 'Sources:' section listing source file names, or a clear statement that no relevant information was found.",
+    # Task for the Document Researcher agent
+    # This task focuses exclusively on using the tool to find information.
+    research_task = Task(
+        description=f"Find relevant information in the policy and standards documents for the query: '{query}'.",
+        expected_output="A block of text containing chunks of the most relevant document sections and their source file names.",
         agent=document_researcher
     )
 
-    # Use hierarchical process as it handles context passing correctly
-    # Use sequential process with a single task
+    # Task for the Insight Synthesizer agent
+    # This task takes the context from the first task and focuses on crafting the answer.
+    synthesis_task = Task(
+        description=f"Analyze the provided document context from {research_task} and formulate a comprehensive and accurate answer to the user's original question: '{query}'.",
+        expected_output="A clear, concise, and complete answer based solely on the provided context.",
+        agent=insight_synthesizer,
+        context=[research_task] # This ensures it uses the output from the research_task
+    )
+
+    # Create the crew with a sequential process
     rag_crew = Crew(
-        agents=[document_researcher],
-        tasks=[comprehensive_task],
-        process=Process.sequential,
+        agents=[document_researcher, insight_synthesizer],
+        tasks=[research_task, synthesis_task],
+        process=Process.sequential, # The tasks will be executed one after the other
         verbose=True
     )
 

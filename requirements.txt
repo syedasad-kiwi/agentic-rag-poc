@@ -9,3 +9,7 @@ python-dotenv
 psycopg2-binary
 crewai
 crewai-tools
+ragas
+datasets
+rank_bm25
+llama-index-retrievers-bm25
