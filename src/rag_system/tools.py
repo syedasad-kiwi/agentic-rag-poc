@@ -1,4 +1,5 @@
 import os
+import requests
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 from llama_index.core import VectorStoreIndex
@@ -7,8 +8,23 @@ from llama_index.embeddings.ollama import OllamaEmbedding
 from crewai.tools import tool
 from typing import Dict, Union, Any
 
+
 # Load environment variables to get the database URL
 load_dotenv()
+
+def warm_up_ollama(base_url: str, model_name: str) -> bool:
+    """Pre-warm Ollama model to avoid cold start delays"""
+    try:
+        # Send a small embedding request to warm up the model
+        response = requests.post(
+            f"{base_url}/api/embeddings",
+            json={"model": model_name, "prompt": "test"},
+            timeout=30
+        )
+        return response.status_code == 200
+    except Exception as e:
+        print(f"Warning: Could not warm up Ollama model: {e}")
+        return False
 
 @tool("Document Retrieval Tool")  
 def document_retrieval_tool(query: Union[str, Dict[str, Any]]) -> str:
@@ -50,6 +66,14 @@ def document_retrieval_tool(query: Union[str, Dict[str, Any]]) -> str:
             return "Error: DATABASE_URL environment variable not set."
 
         db_url_parts = urlparse(DATABASE_URL)
+
+        # Debug print parsed connection details (password masked)
+        print(f"DEBUG: Parsed Postgres connection details - "
+              f"host: {db_url_parts.hostname}, "
+              f"port: {db_url_parts.port}, "
+              f"database: {db_url_parts.path.lstrip('/')}, "
+              f"user: {db_url_parts.username}, "
+              f"password: {'******' if db_url_parts.password else None}")
         
         # Initialize the vector store with connection details
         vector_store = PGVectorStore.from_params(
@@ -58,12 +82,21 @@ def document_retrieval_tool(query: Union[str, Dict[str, Any]]) -> str:
             database=db_url_parts.path.lstrip('/'),
             user=db_url_parts.username,
             password=db_url_parts.password,
-            table_name="document_embeddings",  # Will map to data_document_embeddings
+            table_name="document_embeddings",  # Use the actual table name
             embed_dim=768, # Dimension for nomic-embed-text
         )
 
-        # Initialize the embedding model
-        embed_model = OllamaEmbedding(model_name="nomic-embed-text")
+        # Initialize the embedding model - use environment variable for base URL to support Docker
+        ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        
+        # Pre-warm the Ollama model to avoid cold start delays
+        warm_up_ollama(ollama_base_url, "nomic-embed-text:v1.5")
+        
+        embed_model = OllamaEmbedding(
+            model_name="nomic-embed-text:v1.5",
+            base_url=ollama_base_url,
+            request_timeout=120.0  # Increased timeout for slower connections
+        )
 
         # Create a LlamaIndex VectorStoreIndex object from the vector store
         index = VectorStoreIndex.from_vector_store(

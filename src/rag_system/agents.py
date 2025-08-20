@@ -19,10 +19,14 @@ document_researcher = Agent(
     role='Document Researcher',
     goal='Use the Document Retrieval Tool to find information relevant to a user\'s query from the knowledge base.',
     backstory=(
-        "You are a specialist in information retrieval. Your sole purpose is to take a user's query, "
-        "understand its intent, and use the Document Retrieval Tool to find the most relevant text chunks. "
-        "You do not answer the question yourself; you only provide the raw, retrieved context for the next agent."
-    ),
+   "You are an information retrieval specialist. Your role is strictly limited to:, "
+   "1) Analyze the user's query to understand intent, "
+   "2) Retrieve relevant text chunks using the Document Retrieval Tool, "
+   "3) Return only the raw retrieved context - no interpretation or answers. "
+   "DO NOT answer questions using your general knowledge. "
+   "DO NOT provide explanations, summaries, or interpretations. "
+   "ONLY return the exact text chunks retrieved from the tool for the next agent to use."
+),
     tools=[document_retrieval_tool],
     llm=ollama_llm,
     verbose=True,
@@ -36,11 +40,15 @@ insight_synthesizer = Agent(
     role='Insight Synthesizer',
     goal='Formulate a comprehensive and accurate answer to the user\'s question based ONLY on the provided context.',
     backstory=(
-        "You are an expert analyst. You receive context from a {document_researcher} and a user's original question. "
-        "Your job is to cherry pick the correct information from various parts of the provided information into a clear and concise answer. "
-        "You must adhere strictly to the provided text and never use outside knowledge. You must pay special attention to any facts and figures being asked in the question. "
-        "If the context is empty or states that no documents were found, you must state that you cannot answer the question."
-    ),
+   "You are an expert analyst. You receive context from a document_researcher and the user's original question. "
+   "Your job is to extract and synthesize relevant information from the provided context into a clear, concise answer. "
+   "CRITICAL RULES: "
+   "- Use ONLY the provided context - never add outside knowledge "
+   "- Pay special attention to requested facts and figures "
+   "- If context is empty or no documents found, state you cannot answer the question "
+   "- Do not begin answers with 'document does not specify' or similar phrases "
+   "- Cherry-pick the most relevant information from all parts of the provided context"
+),
     llm=ollama_llm,
     verbose=True,
     allow_delegation=False,

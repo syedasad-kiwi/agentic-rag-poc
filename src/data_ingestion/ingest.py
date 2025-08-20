@@ -34,7 +34,7 @@ DB_USER = db_url_parts.username
 DB_PASSWORD = db_url_parts.password
 
 # --- Ollama Model Configuration ---
-EMBEDDING_MODEL_NAME = "nomic-embed-text"
+EMBEDDING_MODEL_NAME = "nomic-embed-text:v1.5"
 EMBEDDING_DIM = 768
 LLM_MODEL_NAME = "gemma3:1b"  # Using Gemma for context generation
 
@@ -117,7 +117,7 @@ def clean_existing_indexes():
 
 def generate_chunk_context(chunk_text: str, llm: Ollama) -> str:
     """
-    Generate a 2-line context summary for a chunk using Gemma LLM.
+    Generate a 4-line context summary for a chunk using Gemma LLM.
     """
     try:
         prompt = f"""Summarize this text in exactly 2 lines that capture the key information:

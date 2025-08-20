@@ -19,3 +19,6 @@ sentencepiece
 docling-ibm-models[mlx]
 fastapi
 uvicorn
+openinference-instrumentation-crewai
+arize-phoenix-otel
+openinference-instrumentation-litellm
