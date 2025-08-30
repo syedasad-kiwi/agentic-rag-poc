@@ -18,5 +18,10 @@ sentencepiece
 # docling-ibm-models[mlx]
 fastapi
 uvicorn
+# Phoenix tracing packages
+arize-phoenix
+arize-phoenix-otel
+openinference-instrumentation-crewai
+openinference-instrumentation-litellm
 # Pin numpy to avoid conflicts
 numpy<2

@@ -1,10 +1,35 @@
 import os
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict
 import uvicorn
 from dotenv import load_dotenv
+
+# --- Arize Phoenix Tracing Setup ---
+# This block configures the tracer to send data to your local Phoenix instance.
+# It should be at the very top of your application's entry point.
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Use host.docker.internal for Docker container to access host services
+phoenix_host = os.getenv("PHOENIX_HOST", "host.docker.internal")
+phoenix_endpoint = f"http://{phoenix_host}:6006"
+os.environ["PHOENIX_COLLECTOR_ENDPOINT"] = phoenix_endpoint
+
+try:
+    from phoenix.otel import register
+    tracer_provider = register(
+        project_name="default",
+        endpoint=f"{phoenix_endpoint}/v1/traces",
+        auto_instrument=True  # This automatically instruments CrewAI and other libraries
+    )
+    logging.info(f"✅ Arize Phoenix tracing successfully initialized for API server at {phoenix_endpoint}")
+except ImportError as e:
+    logging.warning(f"⚠️  Phoenix module not found: {e}. Install with: pip install arize-phoenix")
+except Exception as e:
+    logging.warning(f"⚠️  Could not initialize Arize Phoenix tracing: {e}")
+# --- End of Tracing Setup ---
 
 # Ensure the project root is in the Python path
 import sys
