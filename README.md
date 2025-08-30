@@ -65,6 +65,13 @@
 
 ```mermaid
 graph TB
+    subgraph "📄 Data Ingestion Pipeline"
+        RAW["📁 Raw Documents<br/>PDFs, Word, etc."]
+        DOC["🔧 Docling Converter<br/>PDF → JSON/Markdown"]
+        CTX["🧠 Contextual RAG<br/>LlamaIndex + Context Generation"]
+        CHUNK["✂️ Smart Chunking<br/>Markdown Parser + Token Splitter"]
+    end
+    
     subgraph "🌐 User Interface"
         UI["🖥️ OpenWebUI"]
     end
@@ -80,14 +87,24 @@ graph TB
     end
     
     subgraph "🔍 Retrieval Layer"
-        VDB["🐘 PostgreSQL + pgvector<br/>Vector Database"]
+        VDB["🐘 PostgreSQL + pgvector<br/>Vector Database<br/>768-dim Embeddings"]
         LLM["🦙 Ollama LLM<br/>Gemma 3 - 131K context"]
+        EMB["🔤 Ollama Embeddings<br/>nomic-embed-text"]
     end
     
-    subgraph "📊 Observability"
+    subgraph "📊 Observability & Evaluation"
         PHX["🐦 Arize Phoenix<br/>Tracing & Monitoring"]
+        RAGAS["📈 RAGAS Evaluation<br/>Faithfulness, Relevancy<br/>Context Precision/Recall"]
     end
     
+    %% Data Flow
+    RAW --> DOC
+    DOC --> CTX
+    CTX --> CHUNK
+    CHUNK --> EMB
+    EMB --> VDB
+    
+    %% Query Flow
     UI --> API
     API --> CR
     CR --> A1 & A2
@@ -95,15 +112,68 @@ graph TB
     A2 --> LLM
     VDB --> LLM
     
+    %% Evaluation Flow
+    CR --> RAGAS
+    VDB -.-> RAGAS
+    
+    %% Monitoring
     API -.-> PHX
     CR -.-> PHX
+    CTX -.-> PHX
     
+    style RAW fill:#ffebee
+    style DOC fill:#f3e5f5
+    style CTX fill:#e8f5e8
+    style CHUNK fill:#fff3e0
     style UI fill:#e1f5fe
     style API fill:#f3e5f5
     style CR fill:#fff3e0
     style VDB fill:#e8f5e8
     style PHX fill:#fce4ec
+    style RAGAS fill:#e3f2fd
+    style EMB fill:#f1f8e9
 ```
+
+### 🏗️ Architecture Components
+
+| Component | Purpose | Technology Stack |
+|-----------|---------|------------------|
+| **📄 Data Ingestion Pipeline** | Document processing and vectorization | |
+| ├── 📁 Raw Documents | Source files (PDFs, Word docs, etc.) | File system |
+| ├── 🔧 Docling Converter | Document parsing and conversion | [Docling](https://github.com/DS4SD/docling) |
+| ├── 🧠 Contextual RAG | Context-aware chunking with LLM | LlamaIndex + Ollama |
+| └── ✂️ Smart Chunking | Intelligent text segmentation | Markdown Parser + Token Splitter |
+| **🌐 User Interface** | Web-based chat interface | OpenWebUI |
+| **🚢 API Layer** | OpenAI-compatible REST API | FastAPI |
+| **🤖 Agent Layer** | Multi-agent orchestration | CrewAI Framework |
+| ├── 🔍 Document Researcher | Retrieval and context gathering | Vector similarity search |
+| └── 🧠 Insight Synthesizer | Response generation and formatting | LLM-powered synthesis |
+| **🔍 Retrieval Layer** | Knowledge storage and retrieval | |
+| ├── 🐘 PostgreSQL + pgvector | Vector database for embeddings | PostgreSQL 15+ with pgvector |
+| ├── 🦙 Ollama LLM | Large language model (131K context) | Gemma 3:4b |
+| └── 🔤 Ollama Embeddings | Text-to-vector conversion | nomic-embed-text (768-dim) |
+| **📊 Observability & Evaluation** | System monitoring and quality assurance | |
+| ├── 🐦 Arize Phoenix | Request tracing and performance monitoring | Phoenix Observability |
+| └── 📈 RAGAS Evaluation | RAG system quality metrics | RAGAS Framework |
+
+### 🔄 Data Flow Explained
+
+1. **📥 Ingestion Phase**:
+   - Raw documents are processed by Docling for parsing
+   - Contextual RAG enhances chunks with semantic context
+   - Smart chunking optimizes content for retrieval
+   - Embeddings are generated and stored in pgvector
+
+2. **🔍 Query Phase**:
+   - User queries via OpenWebUI → FastAPI → CrewAI
+   - Document Researcher retrieves relevant context
+   - Insight Synthesizer generates comprehensive responses
+   - Results formatted and returned to user
+
+3. **📊 Evaluation Phase**:
+   - RAGAS evaluates system performance across multiple metrics
+   - Monitors faithfulness, relevancy, and context quality
+   - Provides continuous feedback for system improvement
 
 ---
 
@@ -273,7 +343,75 @@ Current setup uses **Gemma 3 (4B)** with maximum token configuration:
 
 ---
 
-## 📚 Usage Examples
+## � Data Ingestion & Processing
+
+### 🔧 **Document Processing Pipeline**
+
+#### **Step 1: Document Conversion with Docling**
+```bash
+# 🔄 Convert PDFs and Word documents to structured format
+cd /Users/kiwitech/Documents/agentic-rag-poc
+python src/data_ingestion/ingestion_docling.py
+```
+
+**What it does:**
+- ✨ Converts PDFs, Word docs to JSON and Markdown
+- 📁 Processes files from `data/raw/` → `data/processed/`
+- 🧹 De-duplicates and handles multiple file formats
+- 📊 Preserves document structure and metadata
+
+#### **Step 2: Contextual RAG Indexing**
+```bash
+# 🧠 Generate embeddings with contextual enhancement
+python src/data_ingestion/ingest_contextual_rag.py
+```
+
+**Features:**
+- 🔤 **Contextual Chunking**: LLM-enhanced context for each chunk
+- 🗄️ **Vector Storage**: PostgreSQL + pgvector with 768-dim embeddings
+- ⚡ **Smart Parsing**: Markdown-aware token splitting
+- 📈 **Scalable**: Async processing for large document sets
+
+### 📊 **Quality Evaluation with RAGAS**
+
+#### **Run Comprehensive Evaluation**
+```bash
+# 📈 Evaluate RAG system performance
+python src/evaluation/run_ragas_eval.py
+```
+
+**Metrics Tracked:**
+- 🎯 **Faithfulness**: How factually accurate are responses?
+- 🔍 **Answer Relevancy**: Does the answer address the question?
+- 📚 **Context Recall**: Did retrieval find all relevant information?
+- 🎪 **Context Precision**: How precise is the retrieved context?
+
+**Sample Output:**
+```yaml
+Evaluation Results:
+- Faithfulness: 0.92
+- Answer Relevancy: 0.88
+- Context Recall: 0.85
+- Context Precision: 0.90
+```
+
+### 📁 **Data Directory Structure**
+```
+data/
+├── raw/                          # Source documents
+│   ├── Abu Dhabi Procurement Standards.PDF
+│   ├── HR Bylaws.pdf
+│   └── Procurement Manual.PDF
+├── processed/
+│   ├── json/                     # Structured JSON output
+│   └── md/                       # Markdown conversions
+└── evaluation/
+    └── eval_dataset.jsonl        # Golden dataset for testing
+```
+
+---
+
+## �📚 Usage Examples
 
 ### 💬 **Via OpenWebUI**
 1. Open [`http://localhost:3000`](http://localhost:3000)
