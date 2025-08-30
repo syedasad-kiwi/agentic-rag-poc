@@ -20,7 +20,26 @@ def create_rag_crew(query: str):
     # This task takes the context from the first task and focuses on crafting the answer.
     synthesis_task = Task(
         description=f"Analyze the provided document context from {research_task} and formulate a comprehensive and accurate answer to the user's original question: '{query}'.",
-        expected_output="A clear, concise, and complete answer based solely on the provided context.",
+        expected_output="""A professionally formatted, clear, and complete answer with the following structure:
+
+**DIRECT ANSWER:**
+[Clear, direct response to the question]
+
+**DETAILED BREAKDOWN:**
+[Step-by-step explanation or calculation if applicable]
+- Key point 1
+- Key point 2
+- etc.
+
+**SOURCE REFERENCE:**
+[Article number, section, and document name]
+
+Requirements:
+- Use proper formatting with headers, bullet points, and clear spacing
+- Include specific figures, timeframes, and calculations when relevant
+- Cite exact article/section numbers
+- Professional, easy-to-read presentation
+- Maximum clarity and visual appeal""",
         agent=insight_synthesizer,
         context=[research_task] # This ensures it uses the output from the research_task
     )

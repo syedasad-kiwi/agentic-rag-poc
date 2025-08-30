@@ -1,53 +1,385 @@
-# Agentic RAG POC
+# 🤖 Agentic RAG POC
 
-A proof-of-concept implementation of an agentic Retrieval-Augmented Generation (RAG) system using CrewAI, LlamaIndex, and PostgreSQL with pgvector for intelligent document analysis and question answering.
+<div align="center">
 
-## 🚀 Features
+[![CrewAI](https://img.shields.io/badge/CrewAI-🚢-blue?style=for-the-badge&logo=docker&logoColor=white)](https://crewai.com)
+[![LlamaIndex](https://img.shields.io/badge/LlamaIndex-🦙-green?style=for-the-badge&logo=python&logoColor=white)](https://llamaindex.ai)
+[![Ollama](https://img.shields.io/badge/Ollama-🦙-orange?style=for-the-badge&logo=llama&logoColor=white)](https://ollama.ai)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-🐘-blue?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org)
+[![Docker](https://img.shields.io/badge/Docker-🐳-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
 
-- **Intelligent Document Processing**: Automatically parses and chunks PDF and DOCX documents using DoclingReader with AI-generated context
-- **Vector Search**: PostgreSQL with pgvector extension for efficient similarity search
-- **Agentic Workflow**: CrewAI agents that can retrieve, analyze, and synthesize information
-- **Source Attribution**: Responses include source file references for transparency
-- **Graceful Failure Handling**: System responds appropriately when no relevant information is found
-- **Local LLM Integration**: Uses Ollama for embedding and language model inference
-- **Web Interface**: OpenWebUI integration for user-friendly chat interface
-- **Docker Support**: Full containerization with Docker Compose for easy deployment
-- **OpenAI-Compatible API**: FastAPI server with OpenAI-compatible endpoints
+**🎯 An intelligent agentic RAG system with multi-agent workflows, powered by CrewAI and local LLMs**
+
+</div>
+
+---
+
+## 🌟 Features
+
+<table>
+<tr>
+<td>
+
+### 🧠 **AI-Powered Intelligence**
+- 🤖 **Multi-Agent Workflow** - Specialized agents for research & synthesis
+- 🦙 **Local LLM Integration** - Ollama with Gemma 3 (131K context)
+- 🎯 **Contextual Responses** - AI-generated context for better understanding
+- 📊 **Smart Document Processing** - PDF/DOCX parsing with DoclingReader
+
+</td>
+<td>
+
+### ⚡ **Performance & Scale**
+- 🚀 **Vector Search** - PostgreSQL + pgvector for lightning-fast retrieval
+- 🔄 **Async Processing** - Concurrent document processing
+- 📈 **Optimized Retrieval** - Hybrid search (semantic + keyword)
+- 💾 **Efficient Storage** - Compressed embeddings and metadata
+
+</td>
+</tr>
+<tr>
+<td>
+
+### 🌐 **User Experience**
+- 💬 **OpenWebUI Integration** - Beautiful chat interface
+- 🔗 **OpenAI-Compatible API** - Standard REST endpoints
+- 📚 **Source Attribution** - Transparent document references
+- 🎨 **Rich Formatting** - Professional response presentation
+
+</td>
+<td>
+
+### 🔧 **DevOps Ready**
+- 🐳 **Full Containerization** - Docker + Docker Compose
+- 📊 **Observability** - Arize Phoenix tracing integration
+- 🔍 **Comprehensive Logging** - Real-time monitoring
+- 🛡️ **Production Ready** - CORS, error handling, graceful failures
+
+</td>
+</tr>
+</table>
+
+---
 
 ## 🏗️ Architecture
 
+```mermaid
+graph TB
+    subgraph "🌐 User Interface"
+        UI[🖥️ OpenWebUI]
+    end
+    
+    subgraph "🚢 API Layer"
+        API[⚡ FastAPI Server<br/>OpenAI Compatible]
+    end
+    
+    subgraph "🤖 Agent Layer"
+        CR[📋 CrewAI Orchestrator]
+        A1[🔍 Document Researcher]
+        A2[🧠 Insight Synthesizer]
+    end
+    
+    subgraph "🔍 Retrieval Layer"
+        VDB[🐘 PostgreSQL + pgvector<br/>Vector Database]
+        LLM[🦙 Ollama LLM<br/>Gemma 3 (131K context)]
+    end
+    
+    subgraph "📊 Observability"
+        PHX[🐦 Arize Phoenix<br/>Tracing & Monitoring]
+    end
+    
+    UI --> API
+    API --> CR
+    CR --> A1 & A2
+    A1 --> VDB
+    A2 --> LLM
+    VDB --> LLM
+    
+    API -.-> PHX
+    CR -.-> PHX
+    
+    style UI fill:#e1f5fe
+    style API fill:#f3e5f5
+    style CR fill:#fff3e0
+    style VDB fill:#e8f5e8
+    style PHX fill:#fce4ec
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Document      │    │   PostgreSQL    │    │   CrewAI        │
-│   Ingestion     │───▶│   + pgvector    │───▶│   Agents        │
-│   (DoclingReader)│    │   Vector Store  │    │   (Ollama LLM)  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Raw Documents │    │   Embeddings    │    │   FastAPI       │
-│   (PDF/DOCX)    │    │   & Metadata    │    │   Server        │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                                       │
-                                                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   OpenWebUI     │───▶│   OpenAI API    │───▶│   Intelligent   │
-│   Frontend      │    │   Compatible    │    │   Responses     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+
+---
+
+## 🚀 Complete Setup Guide
+
+### 📋 Prerequisites
+
+<table>
+<tr>
+<td>
+
+**🔧 Required Components**
+- 🐳 Docker & Docker Compose
+- 🦙 Ollama (Local LLM)
+- 🐍 Python 3.8+ (optional)
+
+</td>
+<td>
+
+**💻 System Requirements**
+- 8GB+ RAM (recommended)
+- 50GB+ disk space
+- macOS/Linux/Windows
+
+</td>
+</tr>
+</table>
+
+---
+
+## ⚡ Quick Start (5 Steps)
+
+### 1️⃣ **Setup Ollama**
+
+```bash
+# 🦙 Start Ollama with network access
+OLLAMA_HOST=0.0.0.0 ollama serve
 ```
 
-## 📋 Prerequisites
+### 2️⃣ **Build & Deploy RAG API**
 
-- **Docker & Docker Compose** (Recommended - for complete containerized setup)
-- **Ollama** (Required - for LLM and embeddings)
-- Python 3.8+ (for local development)
-- PostgreSQL 14+ with pgvector extension (if not using Docker)
+```bash
+# 🏗️ Build the Docker image
+docker build -t agentic-rag-api .
 
-## 🛠️ Installation & Setup
+# 🚀 Deploy RAG API container
+docker run --name rag-api -d \
+  --network rag-network \
+  -p 8000:8000 \
+  --env-file .env.docker \
+  agentic-rag-api
+```
 
-### Option 1: Docker Setup (Recommended)
+### 3️⃣ **Deploy OpenWebUI**
 
-This is the complete containerized setup that includes the RAG API, OpenWebUI interface, and networking.
+```bash
+# 🌐 Launch OpenWebUI interface
+docker run --name open-webui -d \
+  --network rag-network \
+  -p 3000:8080 \
+  -e OLLAMA_BASE_URL=http://host.docker.internal:11434 \
+  -v open-webui:/app/backend/data \
+  ghcr.io/open-webui/open-webui:main
+```
+
+### 4️⃣ **Setup Arize Phoenix Tracing**
+
+```bash
+# 📊 Deploy monitoring & tracing
+docker run -d -p 6006:6006 --name phoenix-ui arizephoenix/phoenix:latest
+```
+
+### 5️⃣ **Access Your Applications**
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| 🌐 **OpenWebUI** | [`http://localhost:3000`](http://localhost:3000) | Main chat interface |
+| ⚡ **RAG API** | [`http://localhost:8000`](http://localhost:8000) | API endpoints |
+| 📊 **Phoenix UI** | [`http://localhost:6006`](http://localhost:6006) | Tracing & monitoring |
+
+---
+
+## 🔍 Monitoring & Debugging
+
+### 📊 **Real-Time Logs**
+
+#### 🚢 RAG API Container Logs
+```bash
+# 📋 View real-time logs from the RAG API container
+docker logs -f rag-api
+
+# 📜 View last 50 lines of logs
+docker logs --tail 50 rag-api
+
+# ⏰ View logs with timestamps
+docker logs -t rag-api
+```
+
+#### 🌐 OpenWebUI Container Logs
+```bash
+# 🖥️ View OpenWebUI logs
+docker logs -f open-webui
+
+# 📜 View last 50 lines
+docker logs --tail 50 open-webui
+```
+
+### 🔧 **Connection Testing**
+
+#### 🦙 Test Ollama Connection from Container
+```bash
+# 🧪 Test if the container can reach Ollama
+docker exec -it rag-api curl http://host.docker.internal:11434/api/tags
+
+# 🔄 Alternative test
+docker exec -it rag-api curl http://localhost:11434/api/tags
+```
+
+#### 🌐 Check Container Network Connectivity
+```bash
+# 🕸️ Inspect the network configuration
+docker network inspect rag-network
+
+# 🔍 Check if containers are on the right network
+docker inspect rag-api | grep -A 10 "Networks"
+docker inspect open-webui | grep -A 10 "Networks"
+```
+
+#### 🏠 Check Host Ollama Status
+```bash
+# ✅ Verify Ollama is running on your host
+curl http://localhost:11434/api/tags
+
+# 📋 Check if models are loaded
+ollama list
+
+# 🔍 Check Ollama process
+ps aux | grep ollama
+```
+
+---
+
+## 🛠️ Configuration
+
+### � **Environment Variables**
+
+Create your environment files:
+
+#### 📁 `.env` (Local Development)
+```bash
+DATABASE_URL=postgresql://postgres:password@localhost:5432/rag_db
+OLLAMA_BASE_URL=http://localhost:11434
+```
+
+#### 🐳 `.env.docker` (Container Environment)
+```bash
+DATABASE_URL=postgresql://postgres:password@host.docker.internal:5432/rag_db
+OLLAMA_BASE_URL=http://host.docker.internal:11434
+```
+
+### ⚙️ **Model Configuration**
+
+Current setup uses **Gemma 3 (4B)** with maximum token configuration:
+- 🎯 **Context Length**: 131,072 tokens
+- 🚀 **Max Output**: 131,072 tokens
+- 🔥 **Temperature**: 0.1 (precise responses)
+
+---
+
+## 📚 Usage Examples
+
+### 💬 **Via OpenWebUI**
+1. Open [`http://localhost:3000`](http://localhost:3000)
+2. Select "crew-ai-rag" model
+3. Ask questions about your documents
+
+### 🔗 **Via API**
+```bash
+curl -X POST http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "crew-ai-rag",
+    "messages": [
+      {
+        "role": "user", 
+        "content": "What is the maximum salary deduction for disciplinary penalties?"
+      }
+    ]
+  }'
+```
+
+---
+
+## 🐛 Troubleshooting
+
+<details>
+<summary><strong>🔧 Common Issues & Solutions</strong></summary>
+
+### 🚫 **Container Cannot Connect to Ollama**
+- Ensure Ollama is running with `OLLAMA_HOST=0.0.0.0`
+- Check if `host.docker.internal` resolves correctly
+- Verify network configuration
+
+### 📊 **Models Not Showing in OpenWebUI**
+- Check API logs: `docker logs rag-api`
+- Verify API is accessible: `curl http://localhost:8000/v1/models`
+- Restart containers if needed
+
+### 🐘 **Database Connection Issues**
+- Ensure PostgreSQL container is running
+- Check database credentials in environment files
+- Verify network connectivity between containers
+
+</details>
+
+---
+
+## 🏗️ Development
+
+### 🔨 **Local Development Setup**
+
+```bash
+# 🐍 Create virtual environment
+python -m venv venv
+source venv/bin/activate  # or `venv\Scripts\activate` on Windows
+
+# 📦 Install dependencies
+pip install -r requirements.txt
+
+# 🚀 Run locally
+python main.py "Your question here"
+```
+
+### 🧪 **Running Tests**
+
+```bash
+# 🧪 Run evaluation tests
+python src/evaluation/run_ragas_eval.py
+```
+
+---
+
+## 🤝 Contributing
+
+1. 🍴 Fork the repository
+2. 🌿 Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. 💾 Commit changes (`git commit -m 'Add amazing feature'`)
+4. 📤 Push to branch (`git push origin feature/amazing-feature`)
+5. 🔄 Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- 🚢 [CrewAI](https://crewai.com) - Multi-agent orchestration
+- 🦙 [LlamaIndex](https://llamaindex.ai) - Document processing & retrieval
+- 🦙 [Ollama](https://ollama.ai) - Local LLM inference
+- 🐘 [PostgreSQL](https://postgresql.org) + [pgvector](https://github.com/pgvector/pgvector) - Vector database
+- 🌐 [OpenWebUI](https://openwebui.com) - Beautiful chat interface
+- 🐦 [Arize Phoenix](https://phoenix.arize.com) - Observability & tracing
+
+---
+
+<div align="center">
+
+**⭐ Star this repo if it helped you! ⭐**
+
+[🐛 Report Bug](https://github.com/syedasad-kiwi/agentic-rag-poc/issues) • [✨ Request Feature](https://github.com/syedasad-kiwi/agentic-rag-poc/issues) • [💬 Discussions](https://github.com/syedasad-kiwi/agentic-rag-poc/discussions)
+
+</div>
 
 #### 1. Clone the Repository
 

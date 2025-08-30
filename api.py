@@ -48,17 +48,6 @@ def list_models():
         "object": "list",
         "data": [
             {
-                "id": "rag-model",
-                "object": "model",
-                "created": 1677652288,
-                "owned_by": "crew-ai-rag",
-                "permission": [],
-                "root": "rag-model",
-                "parent": None,
-                "max_tokens": 4096,
-                "context_length": 4096
-            },
-            {
                 "id": "crew-ai-rag",
                 "object": "model", 
                 "created": 1677652288,
@@ -66,8 +55,8 @@ def list_models():
                 "permission": [],
                 "root": "crew-ai-rag",
                 "parent": None,
-                "max_tokens": 4096,
-                "context_length": 4096
+                "max_tokens": 131072,        # Updated to match gemma3:4b max tokens
+                "context_length": 131072     # Updated to match gemma3:4b context length
             }
         ]
     }
