@@ -126,11 +126,11 @@ def document_retrieval_tool(query: Union[str, Dict[str, Any]]) -> str:
             embed_model=embed_model
         )
 
-        # Create a query engine with hybrid search mode
+        # Create a query engine with hybrid search mode - increased retrieval for maximum tokens
         query_engine = index.as_query_engine(
             vector_store_query_mode="hybrid",
-            similarity_top_k=5,
-            sparse_top_k=5  # Number of results from text search
+            similarity_top_k=2,  # Increased from 5 to utilize maximum token capacity
+            sparse_top_k=2       # Increased from 5 to get more comprehensive context
         )
         
         # Query using hybrid search (combines vector + text search)

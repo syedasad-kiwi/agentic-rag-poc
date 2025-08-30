@@ -2,7 +2,7 @@ import os
 from crewai import Agent, LLM
 from .tools import document_retrieval_tool
 
-# Initialize the Ollama LLM for the agents - using gemma3:4b for reliability
+# Initialize the Ollama LLM for the agents - using gemma3:4b with maximum tokens
 # Use environment variable for base URL to support Docker deployment
 ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 ollama_llm = LLM(
@@ -11,6 +11,9 @@ ollama_llm = LLM(
     temperature=1,
     timeout=300,
     verbose=True,  # Enable verbose logging for debugging
+    # Maximum token configuration for gemma3:4b
+    max_tokens=131072,  # Use maximum context length available
+    num_ctx=131072,     # Context window size
 )
 
 # --- AGENT 1: The Specialist Retriever ---
