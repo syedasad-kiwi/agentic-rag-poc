@@ -66,26 +66,26 @@
 ```mermaid
 graph TB
     subgraph "🌐 User Interface"
-        UI[🖥️ OpenWebUI]
+        UI["🖥️ OpenWebUI"]
     end
     
     subgraph "🚢 API Layer"
-        API[⚡ FastAPI Server<br/>OpenAI Compatible]
+        API["⚡ FastAPI Server<br/>OpenAI Compatible"]
     end
     
     subgraph "🤖 Agent Layer"
-        CR[📋 CrewAI Orchestrator]
-        A1[🔍 Document Researcher]
-        A2[🧠 Insight Synthesizer]
+        CR["📋 CrewAI Orchestrator"]
+        A1["🔍 Document Researcher"]
+        A2["🧠 Insight Synthesizer"]
     end
     
     subgraph "🔍 Retrieval Layer"
-        VDB[🐘 PostgreSQL + pgvector<br/>Vector Database]
-        LLM[🦙 Ollama LLM<br/>Gemma 3 (131K context)]
+        VDB["🐘 PostgreSQL + pgvector<br/>Vector Database"]
+        LLM["🦙 Ollama LLM<br/>Gemma 3 - 131K context"]
     end
     
     subgraph "📊 Observability"
-        PHX[🐦 Arize Phoenix<br/>Tracing & Monitoring]
+        PHX["🐦 Arize Phoenix<br/>Tracing & Monitoring"]
     end
     
     UI --> API
