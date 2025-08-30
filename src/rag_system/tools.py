@@ -75,16 +75,38 @@ def document_retrieval_tool(query: Union[str, Dict[str, Any]]) -> str:
               f"user: {db_url_parts.username}, "
               f"password: {'******' if db_url_parts.password else None}")
         
-        # Initialize the vector store with connection details
-        vector_store = PGVectorStore.from_params(
-            host=db_url_parts.hostname,
-            port=db_url_parts.port,
-            database=db_url_parts.path.lstrip('/'),
-            user=db_url_parts.username,
-            password=db_url_parts.password,
-            table_name="document_embeddings",  # Use the actual table name
-            embed_dim=768, # Dimension for nomic-embed-text
-        )
+        # Initialize the vector store with connection details and hybrid search enabled
+        # Check for contextual table first, fallback to regular table
+        contextual_table = "doc_md_contextual_20250830"
+        regular_table = "doc_md_20250830_015134"
+        
+        # Try contextual table first
+        try:
+            vector_store = PGVectorStore.from_params(
+                host=db_url_parts.hostname,
+                port=db_url_parts.port,
+                database=db_url_parts.path.lstrip('/'),
+                user=db_url_parts.username,
+                password=db_url_parts.password,
+                table_name=contextual_table,  # Use contextual table if available
+                embed_dim=768, # Dimension for nomic-embed-text
+                hybrid_search=True,
+                text_search_config="english",
+            )
+            print(f"DEBUG: Using contextual table: {contextual_table}")
+        except Exception as e:
+            print(f"DEBUG: Contextual table not available, using regular table: {e}")
+            vector_store = PGVectorStore.from_params(
+                host=db_url_parts.hostname,
+                port=db_url_parts.port,
+                database=db_url_parts.path.lstrip('/'),
+                user=db_url_parts.username,
+                password=db_url_parts.password,
+                table_name=regular_table,  # Fallback to regular table
+                embed_dim=768, # Dimension for nomic-embed-text
+                hybrid_search=True,
+                text_search_config="english",
+            )
 
         # Initialize the embedding model - use environment variable for base URL to support Docker
         ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
@@ -104,32 +126,50 @@ def document_retrieval_tool(query: Union[str, Dict[str, Any]]) -> str:
             embed_model=embed_model
         )
 
-        # Create a retriever to query the index
-        retriever = index.as_retriever(similarity_top_k=5)
+        # Create a query engine with hybrid search mode
+        query_engine = index.as_query_engine(
+            vector_store_query_mode="hybrid",
+            similarity_top_k=5,
+            sparse_top_k=5  # Number of results from text search
+        )
         
-        # Retrieve nodes (chunks) relevant to the query
-        retrieved_nodes = retriever.retrieve(search_query)
+        # Query using hybrid search (combines vector + text search)
+        response = query_engine.query(search_query)
+        retrieved_nodes = response.source_nodes
         
         if not retrieved_nodes:
             return "No relevant documents found for this query."
         
-        # Format the retrieved context with source metadata
+        # Format the retrieved context with source metadata and contextual information
         formatted_chunks = []
         for i, node in enumerate(retrieved_nodes, 1):
             content = node.get_content()
             
             # Extract source file information from metadata
             source_info = "Unknown source"
+            context_info = ""
+            page_info = ""
+            
             if hasattr(node, 'metadata') and node.metadata:
+                # File information
                 file_name = node.metadata.get('source_file', node.metadata.get('file_name', 'Unknown file'))
                 file_path = node.metadata.get('file_path', '')
                 if file_path:
-                    # Extract just the filename from the full path
                     source_info = f"Source: {os.path.basename(file_path)}"
                 else:
                     source_info = f"Source: {file_name}"
+                
+                # Contextual information (if available)
+                context = node.metadata.get('context', '')
+                if context:
+                    context_info = f"\nContext: {context}"
+                
+                # Page number information (if available)
+                page_num = node.metadata.get('page_number', '')
+                if page_num:
+                    page_info = f" (Page {page_num})"
             
-            formatted_chunk = f"**Document Chunk {i}**\n{source_info}\n\nContent:\n{content}"
+            formatted_chunk = f"**Document Chunk {i}**\n{source_info}{page_info}{context_info}\n\nContent:\n{content}"
             formatted_chunks.append(formatted_chunk)
         
         context = "\n\n" + "="*50 + "\n\n".join(formatted_chunks)
