@@ -20,26 +20,19 @@ def create_rag_crew(query: str):
     # This task takes the context from the first task and focuses on crafting the answer.
     synthesis_task = Task(
         description=f"Analyze the provided document context from {research_task} and formulate a comprehensive and accurate answer to the user's original question: '{query}'.",
-        expected_output="""A professionally formatted, clear, and complete answer with the following structure:
+        expected_output="""A professional, well-structured response that directly answers the user's question. Format the response naturally and appropriately based on the content:
 
-**DIRECT ANSWER:**
-[Clear, direct response to the question]
+Guidelines for response formatting:
+- Start with a clear, direct answer to the question
+- Provide supporting details, explanations, or calculations only when relevant
+- Include specific references to policy articles, sections, or documents when citing sources
+- Use natural language flow rather than rigid templates
+- Adapt the structure to fit the content (simple answers for simple questions, detailed breakdowns for complex ones)
+- Use proper formatting (bullet points, numbering, or paragraphs) as appropriate for the content
+- Ensure professional tone and clarity
+- Include precise figures, timeframes, and regulatory references where applicable
 
-**DETAILED BREAKDOWN:**
-[Step-by-step explanation or calculation if applicable]
-- Key point 1
-- Key point 2
-- etc.
-
-**SOURCE REFERENCE:**
-[Article number, section, and document name]
-
-Requirements:
-- Use proper formatting with headers, bullet points, and clear spacing
-- Include specific figures, timeframes, and calculations when relevant
-- Cite exact article/section numbers
-- Professional, easy-to-read presentation
-- Maximum clarity and visual appeal""",
+The response should feel conversational yet authoritative, avoiding repetitive headers unless the content genuinely requires structured breakdown.""",
         agent=insight_synthesizer,
         context=[research_task] # This ensures it uses the output from the research_task
     )
