@@ -34,7 +34,7 @@ Guidelines for response formatting:
 
 The response should feel conversational yet authoritative, avoiding repetitive headers unless the content genuinely requires structured breakdown.""",
         agent=insight_synthesizer,
-        context=[research_task] 
+        context=[research_task]
     )
 
     # Create the crew with a sequential process

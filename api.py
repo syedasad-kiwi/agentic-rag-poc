@@ -1,4 +1,4 @@
-import os
+import os, sys
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,10 +6,14 @@ from pydantic import BaseModel
 from typing import List, Dict
 import uvicorn
 from dotenv import load_dotenv
+# Import your existing crew creation function
+from src.rag_system.crew import create_rag_crew
+project_root = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, project_root)
+# Load environment variables
+load_dotenv()
 
 # --- Arize Phoenix Tracing Setup ---
-# This block configures the tracer to send data to your local Phoenix instance.
-# It should be at the very top of your application's entry point.
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Use host.docker.internal for Docker container to access host services
@@ -24,23 +28,11 @@ try:
         endpoint=f"{phoenix_endpoint}/v1/traces",
         auto_instrument=True  # This automatically instruments CrewAI and other libraries
     )
-    logging.info(f"✅ Arize Phoenix tracing successfully initialized for API server at {phoenix_endpoint}")
+    logging.info(f"Arize Phoenix tracing successfully initialized for API server at {phoenix_endpoint}")
 except ImportError as e:
-    logging.warning(f"⚠️  Phoenix module not found: {e}. Install with: pip install arize-phoenix")
+    logging.warning(f"Phoenix module not found: {e}. Install with: pip install arize-phoenix")
 except Exception as e:
-    logging.warning(f"⚠️  Could not initialize Arize Phoenix tracing: {e}")
-# --- End of Tracing Setup ---
-
-# Ensure the project root is in the Python path
-import sys
-project_root = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, project_root)
-
-# Import your existing crew creation function
-from src.rag_system.crew import create_rag_crew
-
-# Load environment variables
-load_dotenv()
+    logging.warning(f"Could not initialize Arize Phoenix tracing: {e}")
 
 # Initialize the FastAPI app
 app = FastAPI(

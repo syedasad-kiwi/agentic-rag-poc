@@ -10,13 +10,12 @@ from ragas.metrics import (
     context_precision,
 )
 from dotenv import load_dotenv
+# Now you can import from your modules
+from src.rag_system.crew import create_rag_crew
 
 # Add the project root to the Python path to allow importing from 'src'
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, project_root)
-
-# Now you can import from your modules
-from src.rag_system.crew import create_rag_crew
 
 # --- Configuration ---
 # Load environment variables from .env file
@@ -89,7 +88,7 @@ async def main():
     eval_dataset = Dataset.from_dict(evaluation_data)
 
     # --- Run the RAGAS evaluation ---
-    print("\n📊 Evaluating the results with RAGAS...")
+    print("Evaluating the results with RAGAS...")
     
     # Define the metrics we want to use
     metrics = [
@@ -105,7 +104,7 @@ async def main():
         metrics=metrics,
     )
 
-    print("\n🎉 Evaluation Complete!")
+    print("\n Evaluation Complete!")
     print("-------------------------")
     print(result)
     print("-------------------------")

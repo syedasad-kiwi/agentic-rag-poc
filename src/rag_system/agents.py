@@ -32,7 +32,7 @@ document_researcher = Agent(
     llm=ollama_llm,
     verbose=True,
     allow_delegation=False,
-    max_iter=3,  # Limit iterations to prevent infinite loops
+    max_iter=3,
 )
 
 
@@ -66,7 +66,6 @@ insight_synthesizer = Agent(
     llm=ollama_llm,
     verbose=True,
     allow_delegation=False,
-    max_iter=3,  
-   
+    max_iter=3,
     tools=[]
 )

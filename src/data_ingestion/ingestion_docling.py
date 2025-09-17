@@ -24,11 +24,9 @@ class DoclingIngestion:
         """
         self.input_dir = Path(input_dir)
         self.output_root = Path(output_dir)
-        self.json_dir = self.output_root / "json"
         self.md_dir = self.output_root / "md"
         
         # Create directories once
-        self.json_dir.mkdir(parents=True, exist_ok=True)
         self.md_dir.mkdir(parents=True, exist_ok=True)
         
         # Initialize converter
