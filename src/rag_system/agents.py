@@ -2,8 +2,7 @@ import os
 from crewai import Agent, LLM
 from .tools import document_retrieval_tool
 
-# Initialize the Ollama LLM for the agents - using gemma3:4b with maximum tokens
-# Use environment variable for base URL to support Docker deployment
+
 ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 ollama_llm = LLM(
     model="ollama/gemma3:4b",  # Using a larger model for better context understanding
@@ -16,8 +15,7 @@ ollama_llm = LLM(
     num_ctx=131072,     # Context window size
 )
 
-# --- AGENT 1: The Specialist Retriever ---
-# This agent's only job is to call the retrieval tool correctly.
+
 document_researcher = Agent(
     role='Document Researcher',
     goal='Use the Document Retrieval Tool to find information relevant to a user\'s query from the knowledge base.',
@@ -37,8 +35,7 @@ document_researcher = Agent(
     max_iter=3,  # Limit iterations to prevent infinite loops
 )
 
-# --- AGENT 2: The Specialist Synthesizer ---
-# This agent's only job is to write the final answer based on the context it receives.
+
 insight_synthesizer = Agent(
     role='Insight Synthesizer',
     goal='Create clear, professional responses that directly answer user questions based on the provided context.',
@@ -69,7 +66,7 @@ insight_synthesizer = Agent(
     llm=ollama_llm,
     verbose=True,
     allow_delegation=False,
-    max_iter=3,  # Limit iterations to prevent infinite loops
-    # This agent does not need tools; it only processes text.
+    max_iter=3,  
+   
     tools=[]
 )
